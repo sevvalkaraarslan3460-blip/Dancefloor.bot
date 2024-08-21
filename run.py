@@ -15,7 +15,7 @@ class WebServer():
       return "Funcionando"
 
   def run(self) -> None:
-    self.app.run(host='0.0.0.0', port=8080)
+    self.app.run(host='0.0.0.0', port=8010)
 
   def keep_alive(self):
     t = Thread(target=self.run)
@@ -26,7 +26,7 @@ class WebServer():
 bot_file_name = "main"
 bot_class_name = "bot"
 room_id = "66bad059afeca0c24b497205"
-bot_token = "60cd05e713ba823116a9e70f7fbb9418bdbca45e2c057b1fb8bf57c4c265d5f1"
+bot_token = "e6afc2ed8cbe059baa1c4420661e6b385e0d37c09a7697d2a6360e688fc636f7"
 
 my_bot = BotDefinition(getattr(import_module(bot_file_name), bot_class_name)(), room_id, bot_token)
 
