@@ -5,6 +5,23 @@ import traceback
 from importlib import import_module
 from highrise.__main__ import *
 
+class WebServer():
+
+  def __init__(self):
+    self.app = Flask(__name__)
+
+    @self.app.route('/')
+    def index() -> str:
+      return "Funcionando"
+
+  def run(self) -> None:
+    self.app.run(host='0.0.0.0', port=8080)
+
+  def keep_alive(self):
+    t = Thread(target=self.run)
+    t.start()
+
+
 # BOT SETTINGS
 bot_file_name = "main"
 bot_class_name = "bot"
