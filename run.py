@@ -25,8 +25,8 @@ class WebServer():
 # BOT SETTINGS
 bot_file_name = "main"
 bot_class_name = "bot"
-room_id = "66c54aa75912b02e24d54fa7"
-bot_token = "2632b0a291fff7fa33db68d5882567342a7bdbb2d6543512bd11a42144631457"
+room_id = "66bad059afeca0c24b497205"
+bot_token = "60cd05e713ba823116a9e70f7fbb9418bdbca45e2c057b1fb8bf57c4c265d5f1"
 
 my_bot = BotDefinition(getattr(import_module(bot_file_name), bot_class_name)(), room_id, bot_token)
 
