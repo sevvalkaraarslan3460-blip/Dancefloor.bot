@@ -357,7 +357,7 @@ class bot(BaseBot):
                     await asyncio.gather(*emote_tasks)
                     await asyncio.sleep(emote_time)
 
-                await asyncio.sleep(1)
+                await asyncio.sleep(15)
 
             except Exception as e:
                 print(f"{e}")
@@ -374,4 +374,3 @@ class bot(BaseBot):
                 self.dancer.remove(user.id)
         except Exception as e:
             print(f"{e}")
-
