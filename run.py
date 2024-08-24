@@ -26,7 +26,7 @@ class WebServer():
 bot_file_name = "main"
 bot_class_name = "bot"
 room_id = "66bad059afeca0c24b497205"
-bot_token = "e6afc2ed8cbe059baa1c4420661e6b385e0d37c09a7697d2a6360e688fc636f7"
+bot_token = "432f23df3fc5076fe6c95ade994a533c9d473ecdb56acc31346899a94d6aaa6d"
 
 my_bot = BotDefinition(getattr(import_module(bot_file_name), bot_class_name)(), room_id, bot_token)
 
