@@ -6,7 +6,7 @@ from pickuplines import PUL
 import time
 
 
-class xenoichi(BaseBot):
+class Raymgbot(BaseBot):
     def __init__(self):
         super().__init__()
 
@@ -364,3 +364,5 @@ class xenoichi(BaseBot):
                 print(f"Error in dance_floor: {e}")
                 # Sleep briefly to prevent immediate retries on errors
                 await asyncio.sleep(2)
+
+
