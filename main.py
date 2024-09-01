@@ -6,14 +6,14 @@ from pickuplines import PUL
 import time
 
 
-class bot(BaseBot):
+class xenoichi(BaseBot):
     def __init__(self):
         super().__init__()
 
         self.check_players_task = None
-
+       
         self.emotesdf = Dance_Floor
-
+   
         self.emote_tasks = {}
 
         self.dancer = []
@@ -24,20 +24,22 @@ class bot(BaseBot):
         self.bot_pos = None
 
     async def on_start(self, session_metadata):
-
         print("Bot started")
-
         self.load_loc_data()
 
         if self.bot_pos:
-            await self.highrise.walk_to(Position(16.5 , 0.0 , 12.5 , "FrontRight"))
+            await self.highrise.teleport(self.highrise.my_id, self.bot_pos)
 
-        asyncio.create_task(self.dance_floor())
+        # Ensure the dance_floor task is not already running
+        if not self.check_players_task or self.check_players_task.done():
+            self.check_players_task = asyncio.create_task(self.dance_floor())
+
+
 
     async def on_chat(self, user: User, message: str) -> None:
-
+        
             print(f"{user.username} said: {message}")
-            if message.startswith("!wallet") and user.username == "RayMG":
+            if message.startswith("!wallet") and user.username == "iced_yu":
                   wallet = (await self.highrise.get_wallet()).content
                   await self.highrise.chat(f"The bot wallet contains {wallet[0].amount} {wallet[0].type}")
             if message.lower().startswith("!tipme ") and user.username=="iced_yu":
@@ -93,7 +95,7 @@ class bot(BaseBot):
                     await self.highrise.chat("Invalid tip amount. Please specify a valid number.")
 
 
-            if message.lower().startswith("!tipall ") and user.username == "RayMG":
+            if message.lower().startswith("!tipall ") and user.username == "iced_yu":
               parts = message.split(" ")
               if len(parts) != 2:
                   await self.highrise.send_message(user.id, "Invalid command")
@@ -156,38 +158,38 @@ class bot(BaseBot):
                       return
                   for bar in tip:
                       await self.highrise.tip_user(room_user.id, bar)
-            elif message.startswith("!df 1"):
+            elif message.startswith("/pos1"):
                 self.pos1 = await self.get_actual_pos(user.id)
-                await self.highrise.chat(f"🎵Position 1: [{self.pos1}]")
+                await self.highrise.chat("Position 1 set.")
 
-            elif message.startswith("!df 2"):
+            elif message.startswith("/pos2"):
 
                 self.pos2 = await self.get_actual_pos(user.id)
-                await self.highrise.chat(f"🎵Position 1 : [{self.pos2}]")
+                await self.highrise.chat("Position 2 set.")
 
-            elif message.startswith("!check"):
+            elif message.startswith("/check"):
 
-                await self.highrise.chat(f"🎵All Position: [{self.on_dance_floor}]")
+                await self.highrise.chat(f"{self.on_dance_floor}")
 
-            elif message.startswith("!create"):
+            elif message.startswith("/create"):
 
                 if self.pos1 and self.pos2:
                     await self.create_dance_floor()
-                    await self.highrise.chat("✅️Dancefloor created.")
+                    await self.highrise.chat("Dance floor created.")
                     self.pos1 = None
                     self.pos2 = None
                 else:
-                    await self.highrise.chat("❌️Set up the dancefloor first: !dancefloor 1 | !dancefloor 2")
+                    await self.highrise.chat("Please set both Position 1 and Position 2 first.")
 
+           
 
-
-            elif message.startswith("!delete"):
+            elif message.startswith("/clear-df"):
 
                 self.on_dance_floor = []
-                await self.highrise.chat("❌️Dancefloor removed.")
+                await self.highrise.chat("Dance floor/s removed.")
                 self.save_loc_data()
 
-
+            
     async def get_actual_pos(self, user_id):
 
         room_users = await self.highrise.get_room_users()
@@ -196,7 +198,7 @@ class bot(BaseBot):
             if user.id == user_id:
                 return position
 
-
+    
 
     async def teleport_target_user_to_loc(self, target_username, loc):
 
@@ -265,7 +267,7 @@ class bot(BaseBot):
             return emote_info
         except ValueError:
             pass
-
+              
 
     async def on_emote(self, user: User, emote_id: str, receiver: User | None) -> None:
         print(f"{user.username} emoted: {emote_id}")
@@ -319,7 +321,7 @@ class bot(BaseBot):
     def save_loc_data(self):
 
         loc_data = {
-
+          
             'bot_position': {'x': self.bot_pos.x, 'y': self.bot_pos.y, 'z': self.bot_pos.z} if self.bot_pos else None,
             'dance_floor': self.on_dance_floor if self.on_dance_floor else None
         }
@@ -337,40 +339,28 @@ class bot(BaseBot):
         except FileNotFoundError:
             pass
 
-
-
+  
+    
 
     async def dance_floor(self):
-
         while True:
-
             try:
-
                 if self.on_dance_floor and self.dancer:
-
+                    # Randomly choose an emote
                     ran = random.randint(1, 73)
                     emote_text, emote_time = await self.get_emote_df(ran)
-                    emote_time -= 10
 
-                    emote_tasks = [self.highrise.send_emote(emote_text, user_id) for user_id in self.dancer]
+                    # Send the emote to all dancers
+                    for user_id in self.dancer:
+                        await self.highrise.send_emote(emote_text, user_id)
 
-                    await asyncio.gather(*emote_tasks)
-                    await asyncio.sleep(emote_time)
+                    # Wait for a constant 1 second before sending the next emote
+                    await asyncio.sleep(1)
 
-                await asyncio.sleep(15)
+                # General sleep time to avoid a tight loop
+                await asyncio.sleep(2)
 
             except Exception as e:
-                print(f"{e}")
-
-
-
-    async def on_user_join(self, user: User, Position):
-        print(f"{user.username} joined the room")
-
-    async def on_user_leave(self, user: User):
-
-        try:
-            if user.id in self.dancer:
-                self.dancer.remove(user.id)
-        except Exception as e:
-            print(f"{e}")
+                print(f"Error in dance_floor: {e}")
+                # Sleep briefly to prevent immediate retries on errors
+                await asyncio.sleep(2)
