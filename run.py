@@ -1,49 +1,24 @@
-from flask import Flask
-from threading import Thread
-from highrise.__main__ import *
+import sys
+import os
 import time
+import traceback
+from importlib import import_module
+from highrise.__main__ import *
 
+# BOT SETTINGS
+bot_file_name = "Raymgbot"
+bot_class_name = "Raymgbot"
+room_id = "66bad059afeca0c24b497205"
+bot_token ="65bd0b5c01fcde250790eaa593cee5b77bde8525ed49352980dc0d606ac3d256"
 
-class WebServer():
+my_bot = BotDefinition(getattr(import_module(bot_file_name), bot_class_name)(), room_id, bot_token)
 
-  def __init__(self):
-    self.app = Flask(__name__)
+while True:
+    try:
+        definitions = [my_bot]
+        arun(main(definitions))
+    except Exception as e:
+        print(f"An exception occurred: {e}")
+        traceback.print_exc()
+    time.sleep(5)
 
-    @self.app.route('/')
-    def index() -> str:
-      return "Funcionando"
-
-  def run(self) -> None:
-    self.app.run(host='0.0.0.0', port=8089)
-
-  def keep_alive(self):
-    t = Thread(target=self.run)
-    t.start()
-
-
-class RunBot():
-  room_id = "66bad059afeca0c24b497205"
-  bot_token = "6fa44d28975b94f1ba9c206cd930e8f0965bf80d4b5ed4fec4cbd6b4818cbd8a"
-  bot_file = "main"
-  bot_class = "Bot"
-
-  def __init__(self) -> None:
-    self.definitions = [
-        BotDefinition(
-            getattr(import_module(self.bot_file), self.bot_class)(),
-            self.room_id, self.bot_token)
-    ]  # More BotDefinition classes can be added to the definitions list
-
-  def run_loop(self) -> None:
-    while True:
-      try:
-        arun(main(self.definitions))
-
-      except Exception as e:
-        print("Error: ", e)
-        time.sleep(5)
-
-if __name__ == "__main__":
-  WebServer().keep_alive()
-
-  RunBot().run_loop()
