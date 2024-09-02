@@ -39,10 +39,10 @@ class Raymgbot(BaseBot):
     async def on_chat(self, user: User, message: str) -> None:
         
             print(f"{user.username} said: {message}")
-            if message.startswith("!wallet") and user.username == "iced_yu":
+            if message.startswith("!wallet") and user.username == "RayMG":
                   wallet = (await self.highrise.get_wallet()).content
                   await self.highrise.chat(f"The bot wallet contains {wallet[0].amount} {wallet[0].type}")
-            if message.lower().startswith("!tipme ") and user.username=="iced_yu":
+            if message.lower().startswith("!tipme ") and user.username=="RayMG":
                 try:
                     amount_str = message.split(" ")[1]
                     amount = int(amount_str)
@@ -95,7 +95,7 @@ class Raymgbot(BaseBot):
                     await self.highrise.chat("Invalid tip amount. Please specify a valid number.")
 
 
-            if message.lower().startswith("!tipall ") and user.username == "iced_yu":
+            if message.lower().startswith("!tipall ") and user.username == "RayMG":
               parts = message.split(" ")
               if len(parts) != 2:
                   await self.highrise.send_message(user.id, "Invalid command")
