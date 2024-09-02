@@ -6,7 +6,7 @@ from pickuplines import PUL
 import time
 
 
-class Raymgbot(BaseBot):
+class MGBot(BaseBot):
     def __init__(self):
         super().__init__()
 
