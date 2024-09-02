@@ -6,8 +6,8 @@ from importlib import import_module
 from highrise.__main__ import *
 
 # BOT SETTINGS
-bot_file_name = "Raymgbot"
-bot_class_name = "Raymgbot"
+bot_file_name = "MGBot"
+bot_class_name = "MGBot"
 room_id = "66bad059afeca0c24b497205"
 bot_token ="65bd0b5c01fcde250790eaa593cee5b77bde8525ed49352980dc0d606ac3d256"
 
