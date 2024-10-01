@@ -37,6 +37,31 @@ class MGBot(BaseBot):
 
 
     async def on_chat(self, user: User, message: str) -> None:
+    print(f"{user.username} said: {message}")
+
+    # Detect "clap" text or 👏 emoji
+    if message.lower() == "clap" or "👏" in message:
+        # Clap reaction for the user who sent the message
+        await self.highrise.react("clap", user.id)
+
+    # Detect "clap @username" or "👏 @username" command
+    elif message.lower().startswith("clap") or message.startswith("👏"):
+        parts = message.split(" ")
+        if len(parts) == 2:  # Ensure the command has a target user
+            target_username = parts[1].lstrip("@")  # Remove "@" if present
+            target_user = await self.get_target_user_in_room(target_username)
+            
+            if target_user:
+                await self.highrise.react("clap", target_user.id)
+            else:
+                await self.highrise.chat(f"User {target_username} not found in the room.")
+    
+    # If user is a moderator or host and sends "clap all" or "👏 all"
+    if (user.is_moderator or user.is_host) and (message.lower() == "clap all" or message == "👏 all"):
+        # Clap for all users in the room
+        room_users = await self.highrise.get_users_in_room()
+        for room_user in room_users:
+            await self.highrise.react("clap", room_user.id)
         
             print(f"{user.username} said: {message}")
             if message.startswith("!wallet") and user.username == "RayMG":
