@@ -220,65 +220,84 @@ emote_list: list[tuple[list[str], str, float]] = [
 ]
 
 user_last_positions = {}
-
-# Check and start emote loop based on user message
+# ---------------------------------------------------------------------------
+# يبدأ أو يوقف تكرار الإيموت بناءً على رسالة المستخدم
+# ---------------------------------------------------------------------------
 async def check_and_start_emote_loop(self: BaseBot, user: User, message: str):
     try:
         cleaned_msg = message.strip().lower()
 
-        # Stop the emote loop if user types 'stop'
+        # إيقاف اللوب
         if cleaned_msg in ("stop", "/stop", "!stop", "-stop"):
             if user.id in self.user_loops:
                 self.user_loops[user.id]["task"].cancel()
                 del self.user_loops[user.id]
-                await self.highrise.send_whisper(user.id, "Emote loop stopped. (Type any emote name or number to start again)")
+                await self.highrise.send_whisper(
+                    user.id, "Emote loop stopped. (Type any emote name or number to start again)"
+                )
             else:
                 await self.highrise.send_whisper(user.id, "You don't have an active emote loop.")
             return
 
-        # Find the emote based on message
+        # البحث عن الإيموت المطلوب
         selected = next((e for e in emote_list if cleaned_msg in [a.lower() for a in e[0]]), None)
         if selected:
             aliases, emote_id, duration = selected
 
-            # Cancel any existing loop
+            # لو فيه لوب سابق لنفس المستخدم نلغيه
             if user.id in self.user_loops:
                 self.user_loops[user.id]["task"].cancel()
 
+            # --------- اللوب الفعلي للإيموت ----------
             async def emote_loop():
                 try:
                     while True:
                         if not self.user_loops[user.id]["paused"]:
+                            # تحقق أن المستخدم لا يزال بالغرفة
+                            room_users = await self.highrise.get_room_users()
+                            user_ids = [u.id for u, _ in room_users.content]
+                            if user.id not in user_ids:
+                                print(f"[Loop canceled] {user.username} is no longer in the room.")
+                                self.user_loops[user.id]["task"].cancel()
+                                del self.user_loops[user.id]
+                                return
+
+                            # إرسال الإيموت
                             try:
                                 await self.highrise.send_emote(emote_id, user.id)
                             except Exception as e:
                                 print(f"[Loop error {user.username}] {e}")
+
                         await asyncio.sleep(duration)
                 except asyncio.CancelledError:
                     pass
                 except Exception:
                     traceback.print_exc()
 
-            # Create and store the task
+            # إنشاء وتخزين المهمة
             task = asyncio.create_task(emote_loop())
             self.user_loops[user.id] = {
                 "paused": False,
                 "emote_id": emote_id,
                 "duration": duration,
-                "task": task
+                "task": task,
             }
 
             await self.highrise.send_whisper(
                 user.id,
-                f"You are now in a loop for emote number {aliases[0]}. (To stop, type 'stop')"
+                f"You are now in a loop for emote number {aliases[0]}. (To stop, type 'stop')",
             )
+
     except Exception:
         traceback.print_exc()
 
-# Pause/resume loop when the same user walks/stops
+
+# ---------------------------------------------------------------------------
+# إيقاف/استئناف اللوب عندما يتحرك المستخدم
+# ---------------------------------------------------------------------------
 async def handle_user_movement(self: BaseBot, user: User, pos) -> None:
     try:
-        # تجاهل لو المستخدم ما عنده loop
+        # تجاهل إذا لا يوجد لوب
         if user.id not in self.user_loops:
             return
 
@@ -286,24 +305,26 @@ async def handle_user_movement(self: BaseBot, user: User, pos) -> None:
         if user.id == self.user.id:
             return
 
-        # احصل على آخر موقع محفوظ
+        # الموقع السابق
         old_pos = user_last_positions.get(user.id)
-
-        # سجل الموقع الجديد
+        # تسجيل الموقع الجديد
         user_last_positions[user.id] = (pos.x, pos.y, pos.z)
 
-        # أول مرة نحفظ فقط ومانسوي شي
+        # أول تحرك فقط تخزين ثم خروج
         if old_pos is None:
             return
 
-        # إذا فعلاً المستخدم تحرك من مكانه القديم
+        # إذا تحرك فعلياً
         if old_pos != (pos.x, pos.y, pos.z):
             self.user_loops[user.id]["paused"] = True
-
-            # ننتظر لحين توقفه ثم نرجع نفعّل اللوب
+            # انتظر حتى يتوقف ثم أعد تشغيل اللوب
             await asyncio.sleep(2)
             new_pos = user_last_positions.get(user.id)
             if new_pos == (pos.x, pos.y, pos.z):
                 self.user_loops[user.id]["paused"] = False
+
     except Exception:
         traceback.print_exc()
+
+
+
