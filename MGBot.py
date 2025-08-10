@@ -62,11 +62,11 @@ class MGBot(BaseBot):
                 await self.highrise.react("clap", room_user.id)
         
         # Additional commands like tipping, setting positions, etc.
-        if message.startswith("!wallet") and user.username == "REDEliff":
+        if message.startswith("!wallet") and user.username == "REDEliff", "Ali_wq_":
             wallet = (await self.highrise.get_wallet()).content
             await self.highrise.chat(f"The bot wallet contains {wallet[0].amount} {wallet[0].type}")
 
-        if message.lower().startswith("!tipme ") and user.username == "REDEliff":
+        if message.lower().startswith("!tipme ") and user.username == "REDEliff", "Ali_wq_":
             try:
                 amount_str = message.split(" ")[1]
                 amount = int(amount_str)
@@ -118,7 +118,7 @@ class MGBot(BaseBot):
             except (IndexError, ValueError):
                 await self.highrise.chat("Invalid tip amount. Please specify a valid number.")
 
-        if message.lower().startswith("!tipall ") and user.username == "REDEliff":
+        if message.lower().startswith("!tipall ") and user.username == "REDEliff", "Ali_wq_":
             parts = message.split(" ")
             if len(parts) != 2:
                 await self.highrise.send_message(user.id, "Invalid command")
